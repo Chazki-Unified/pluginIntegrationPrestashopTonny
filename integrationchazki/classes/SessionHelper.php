@@ -1,6 +1,6 @@
 <?php
 /**
- * 2019-2022 Xmlshop LLC
+ * 2007-2025 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -18,12 +18,11 @@
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author Xmlshop LLC <tsuren@xmlshop.com>
- * @copyright  2019-2022 PostNL
- * @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- * @version  1.5.0
+ * @author    PrestaShop SA <contact@prestashop.com>
+ * @copyright 2007-2025 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
  */
-
 class SessionHelper
 {
     public function __construct()
@@ -39,9 +38,7 @@ class SessionHelper
     }
 
     private static $key_name = 'CHAZKI_HELPER';
-
-    private static $data = null;
-
+    private static $data;
     private static $instance;
 
     private static function init()
@@ -53,7 +50,7 @@ class SessionHelper
         self::$key_name .= session_id();
         self::$data = json_decode(ChazkiHelper::get(self::$key_name), true);
         if (!is_array(self::$data)) {
-            self::$data = array();
+            self::$data = [];
         }
     }
 

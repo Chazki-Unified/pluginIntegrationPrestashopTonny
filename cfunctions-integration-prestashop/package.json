@@ -19,7 +19,7 @@
     "service": "yarn rm && npx tsc-watch --p tsconfig.base.json --onSuccess 'npx @google-cloud/functions-framework --target=api --runtime=nodejs14 --port=1996'",
     "serve": "node dist/index.js",
     "build:dev": "webpack --mode development",
-    "build": "webpack --mode production",
+    "build": "echo load dist/index.js",
     "lint": "eslint src/* --ext .ts --fix",
     "release": "standard-version",
     "rm": "if [ -d \"dist\" ]; then rm -rf dist; fi"

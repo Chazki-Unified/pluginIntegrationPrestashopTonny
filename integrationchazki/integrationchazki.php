@@ -1,48 +1,47 @@
 <?php
 /**
-* 2007-2022 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2022 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
-
+ * 2007-2025 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    PrestaShop SA <contact@prestashop.com>
+ * @copyright 2007-2025 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once(dirname(__FILE__).'/classes/ChazkiInstallCarrier.php');
-require_once(dirname(__FILE__).'/classes/ChazkiInstallPanel.php');
-require_once(dirname(__FILE__).'/classes/ChazkiUninstall.php');
-require_once(dirname(__FILE__).'/classes/ChazkiCollector.php');
-require_once(dirname(__FILE__).'/classes/ChazkiHelper.php');
-require_once(dirname(__FILE__).'/classes/ChazkiApi.php');
-require_once(dirname(__FILE__).'/classes/ChazkiShippingCost.php');
-require_once(dirname(__FILE__).'/classes/ChazkiOrders.php');
-require_once(dirname(__FILE__).'/classes/ChazkiWebhooks.php');
+require_once dirname(__FILE__) . '/classes/ChazkiInstallCarrier.php';
+require_once dirname(__FILE__) . '/classes/ChazkiInstallPanel.php';
+require_once dirname(__FILE__) . '/classes/ChazkiUninstall.php';
+require_once dirname(__FILE__) . '/classes/ChazkiCollector.php';
+require_once dirname(__FILE__) . '/classes/ChazkiHelper.php';
+require_once dirname(__FILE__) . '/classes/ChazkiApi.php';
+require_once dirname(__FILE__) . '/classes/ChazkiShippingCost.php';
+require_once dirname(__FILE__) . '/classes/ChazkiOrders.php';
+require_once dirname(__FILE__) . '/classes/ChazkiWebhooks.php';
 
 class IntegrationChazki extends CarrierModule
 {
     protected $config_form = false;
     protected $carrier_id_service_code;
-    const HOOKS = array(
+    const HOOKS = [
         'header',
         'backOfficeHeader',
         'updateCarrier',
@@ -51,8 +50,8 @@ class IntegrationChazki extends CarrierModule
         'actionValidateOrder',
         'actionOrderGridDefinitionModifier',
         'actionPaymentConfirmation',
-        'actionOrderGridQueryBuilderModifier'
-    );
+        'actionOrderGridQueryBuilderModifier',
+    ];
 
     public function __construct()
     {
@@ -72,7 +71,10 @@ class IntegrationChazki extends CarrierModule
 
         $this->chazki_carrier = new ChazkiInstallCarrier($this);
         $this->chazki_panel = new ChazkiInstallPanel($this);
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = [
+            'min' => '1.6',
+            'max' => _PS_VERSION_,
+        ];
     }
 
     /**
@@ -87,8 +89,7 @@ class IntegrationChazki extends CarrierModule
         Configuration::updateValue('CHAZKI_SHOP_URL', $baseUrl);
         Configuration::updateValue('INTEGATION_CHAZKI_LIVE_MODE', false);
 
-        return parent::install() &&
-            $this->registerHook(self::HOOKS);
+        return parent::install() && $this->registerHook(self::HOOKS);
     }
 
     public function uninstall()
@@ -101,25 +102,22 @@ class IntegrationChazki extends CarrierModule
 
     public function getUrl()
     {
-        if(Configuration::get(Tools::strtoupper(_DB_PREFIX_.'SSL_ENABLED')))
-        {
+        if (Configuration::get(Tools::strtoupper(_DB_PREFIX_ . 'SSL_ENABLED'))) {
             $domain = \Db::getInstance()->getValue(
                 'SELECT `domain_ssl` FROM `' . _DB_PREFIX_ . 'shop_url` WHERE main = 1'
             );
             $uri = \Db::getInstance()->getValue(
                 'SELECT `physical_uri` FROM `' . _DB_PREFIX_ . 'shop_url` WHERE main = 1'
             );
-            $url = 'https://'.$domain.''.$uri;
-        }
-        else
-        {
+            $url = 'https://' . $domain . '' . $uri;
+        } else {
             $domain = \Db::getInstance()->getValue(
                 'SELECT `domain` FROM `' . _DB_PREFIX_ . 'shop_url` WHERE main = 1'
             );
             $uri = \Db::getInstance()->getValue(
                 'SELECT `physical_uri` FROM `' . _DB_PREFIX_ . 'shop_url` WHERE main = 1'
             );
-            $url = 'http://'.$domain.''.$uri;
+            $url = 'http://' . $domain . '' . $uri;
         }
 
         return $url;
@@ -134,11 +132,11 @@ class IntegrationChazki extends CarrierModule
 
     public function getOrderShippingCost($params, $shipping_cost)
     {
-        //if (Context::getContext()->customer->logged == true)
-        //{
-            $chazki_ship = new ChazkiShippingCost($this);
-            $shipping_cost = $chazki_ship->run($params, $shipping_cost);
-        //}
+        // if (Context::getContext()->customer->logged == true)
+        // {
+        $chazki_ship = new ChazkiShippingCost($this);
+        $shipping_cost = $chazki_ship->run($params, $shipping_cost);
+        // }
 
         return $shipping_cost;
     }
@@ -149,13 +147,13 @@ class IntegrationChazki extends CarrierModule
     }
 
     /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
-    */
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
+     */
     public function hookBackOfficeHeader()
     {
         if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
+            $this->context->controller->addJS($this->_path . 'views/js/back.js');
+            $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
     }
 
@@ -164,22 +162,18 @@ class IntegrationChazki extends CarrierModule
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path.'/views/js/front.js');
-        $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+        $this->context->controller->addJS($this->_path . '/views/js/front.js');
+        $this->context->controller->addCSS($this->_path . '/views/css/front.css');
     }
 
     public function hookUpdateCarrier($params)
     {
-        /**
-         * Not needed since 1.5 
-         * You can identify the carrier by the id_reference
-        */
+        return $params;
     }
 
     public function hookActionPaymentConfirmation($params)
     {
-        if( Configuration::get(Tools::strtoupper(_DB_PREFIX_ . 'CHAZKI_STATUS')) == 'PAYMENT')
-        {
+        if (Configuration::get(Tools::strtoupper(_DB_PREFIX_ . 'CHAZKI_STATUS')) == 'PAYMENT') {
             $order_id = $params['id_order'];
             $chazkiCollector = new ChazkiCollector($this);
 
@@ -193,7 +187,7 @@ class IntegrationChazki extends CarrierModule
 
             $new_order = new ChazkiOrders($this);
 
-            if($new_order->validateOrder()) {
+            if ($new_order->validateOrder()) {
                 $chazkiOrderReturn = $new_order->buildOrder($chazkiOrder);
                 $new_order->generateOrder($chazkiOrderReturn);
             }
@@ -202,8 +196,7 @@ class IntegrationChazki extends CarrierModule
 
     public function hookActionValidateOrder($params)
     {
-        if( Configuration::get(Tools::strtoupper(_DB_PREFIX_ . 'CHAZKI_STATUS')) == 'NEW')
-        {
+        if (Configuration::get(Tools::strtoupper(_DB_PREFIX_ . 'CHAZKI_STATUS')) == 'NEW') {
             $orderObj = $params['order'];
             $chazkiCollector = new ChazkiCollector($this);
 
@@ -217,7 +210,7 @@ class IntegrationChazki extends CarrierModule
 
             $new_order = new ChazkiOrders($this);
 
-            if($new_order->validateOrder()) {
+            if ($new_order->validateOrder()) {
                 $chazkiOrderReturn = $new_order->buildOrder($chazkiOrder);
                 $new_order->generateOrder($chazkiOrderReturn);
             }
@@ -255,7 +248,7 @@ class IntegrationChazki extends CarrierModule
             'route' => 'ps_integrationchazki_label_orders',
             'route_param_name' => 'reference',
             'route_param_field' => 'chazki_label',
-            'target' => '_blank'
+            'target' => '_blank',
         ]);
 
         $definition

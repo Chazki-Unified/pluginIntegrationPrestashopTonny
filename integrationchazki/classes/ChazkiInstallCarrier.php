@@ -1,40 +1,39 @@
 <?php
 /**
-* 2007-2022 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2022 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
-
+ * 2007-2025 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    PrestaShop SA <contact@prestashop.com>
+ * @copyright 2007-2025 PrestaShop SA
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * International Registered Trademark & Property of PrestaShop SA
+ */
 class ChazkiInstallCarrier
 {
-    public static $chazki_services = array(
+    public static $chazki_services = [
         'CHAZKI_SERVICE_CARRIER' => 'Chazki',
-    );
+    ];
 
     const CHAZKI_TRACKING_URL_CARRIER = '/trackcodeTracking/@';
     const CARRIER_ID_SERVICE_CODE = 'CARRIER_ID_SERVICE_CODE';
     const CHAZKI_MODULE_KEY = 'CHAZKI_MODULE_KEY';
     const CHAZKI_WEB_SERVICE_API_KEY = 'CHAZKI_WEB_SERVICE_API_KEY';
-    
+
     public function __construct($module)
     {
         $this->module = $module;
@@ -45,13 +44,13 @@ class ChazkiInstallCarrier
     {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789';
         $key = '';
-        
-        for ($i=0; $i < 32; $i++) {
-            $key = $key . $characters[rand(0, Tools::strlen($characters)-1)];
+
+        for ($i = 0; $i < 32; $i = $i + 1) {
+            $key = $key . $characters[rand(0, Tools::strlen($characters) - 1)];
         }
 
         ChazkiHelper::updateValue(
-            Tools::strtoupper(_DB_PREFIX_.self::CHAZKI_WEB_SERVICE_API_KEY),
+            Tools::strtoupper(_DB_PREFIX_ . self::CHAZKI_WEB_SERVICE_API_KEY),
             $key
         );
 
@@ -63,7 +62,6 @@ class ChazkiInstallCarrier
      *
      * @return void
      */
-
     public function chazkiAccess()
     {
         $chazkiAccess = new WebserviceKey();
@@ -80,14 +78,13 @@ class ChazkiInstallCarrier
 
         WebserviceKey::setPermissionForAccount($chazkiAccess->id, $permissions);
     }
-    
+
     /**
      * enables webservice
      *
      * @return void
      * @throws PrestaShopDatabaseException
      */
-
     public function enableWebService()
     {
         if (ChazkiHelper::get('PS_WEBSERVICE') == 1) {
@@ -108,7 +105,7 @@ class ChazkiInstallCarrier
      */
     public function installCarriers()
     {
-        $carrier_id_service_code = array();
+        $carrier_id_service_code = [];
 
         foreach (self::$chazki_services as $service_code => $name) {
             $added_carrier = $this->addCarrier($name, $service_code);
@@ -144,8 +141,8 @@ class ChazkiInstallCarrier
     {
         $key = Tools::strtoupper($key);
         $id_reference = \Db::getInstance()->getValue(
-            "SELECT value FROM "._DB_PREFIX_.
-            "configuration WHERE name LIKE '".pSQL($key).
+            'SELECT value FROM ' . _DB_PREFIX_ .
+            "configuration WHERE name LIKE '" . pSQL($key) .
             "' ORDER BY id_configuration DESC"
         );
         $carrier = Carrier::getCarrierByReference($id_reference);
@@ -156,7 +153,7 @@ class ChazkiInstallCarrier
 
         $carrier = new Carrier();
         $carrier->name = $name;
-        $carrier->delay = array();
+        $carrier->delay = [];
         $carrier->url = $this->chazkiApi->getUrlNintendo(self::CHAZKI_TRACKING_URL_CARRIER);
         $carrier->external_module_name = ChazkiHelper::NAMEL;
         $carrier->active = true;
@@ -165,14 +162,14 @@ class ChazkiInstallCarrier
         $carrier->need_range = true;
 
         foreach (Language::getLanguages() as $lang) {
-            $id_lang = (int)$lang['id_lang'];
+            $id_lang = (int) $lang['id_lang'];
             $carrier->delay[$id_lang] = '-';
         }
 
         if ($carrier->add()) {
             @copy(
                 dirname(__FILE__, 2) . '/views/img/logoChazki.jpg',
-                _PS_SHIP_IMG_DIR_ . DIRECTORY_SEPARATOR . (int)$carrier->id . '.jpg'
+                _PS_SHIP_IMG_DIR_ . DIRECTORY_SEPARATOR . (int) $carrier->id . '.jpg'
             );
 
             $id_reference = (int) $carrier->id_reference ?: (int) $carrier->id;
@@ -193,7 +190,7 @@ class ChazkiInstallCarrier
      */
     protected function addGroups(Carrier $carrier)
     {
-        $groups_ids = array();
+        $groups_ids = [];
         $groups = Group::getGroups(Context::getContext()->language->id);
 
         foreach ($groups as $group) {
@@ -220,7 +217,7 @@ class ChazkiInstallCarrier
     {
         if ($delete) {
             Db::getInstance()
-                ->execute('DELETE FROM ' . _DB_PREFIX_ . 'carrier_group WHERE id_carrier=' . (int)$carrier->id);
+                ->execute('DELETE FROM ' . _DB_PREFIX_ . 'carrier_group WHERE id_carrier=' . (int) $carrier->id);
         }
 
         if (!is_array($groups) || !count($groups)) {
@@ -230,7 +227,7 @@ class ChazkiInstallCarrier
         $sql = 'INSERT INTO ' . _DB_PREFIX_ . 'carrier_group (id_carrier, id_group) VALUES ';
 
         foreach ($groups as $id_group) {
-            $sql .= '(' . (int)$carrier->id . ', ' . (int)$id_group . '),';
+            $sql .= '(' . (int) $carrier->id . ', ' . (int) $id_group . '),';
         }
 
         return Db::getInstance()->execute(rtrim($sql, ','));
@@ -259,20 +256,20 @@ class ChazkiInstallCarrier
 
         foreach ($zones as $zone) {
             $carrier->addZone($zone['id_zone']);
-            $carrier->addDeliveryPrice(array(array(
+            $carrier->addDeliveryPrice([[
                 'id_carrier' => $carrier->id,
                 'id_range_price' => (int) $rangePrice->id,
                 'id_range_weight' => null,
                 'id_zone' => (int) $zone['id_zone'],
-                'price' => '25'
-            )));
-            $carrier->addDeliveryPrice(array(array(
+                'price' => '25',
+            ]]);
+            $carrier->addDeliveryPrice([[
                 'id_carrier' => $carrier->id,
                 'id_range_price' => null,
                 'id_range_weight' => (int) $rangeWeight->id,
                 'id_zone' => (int) $zone['id_zone'],
-                'price' => '25'
-            )));
+                'price' => '25',
+            ]]);
         }
     }
 }
